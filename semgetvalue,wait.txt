@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+int main() {
+    int ret, sval;
+    sem_t *sem;
+
+    // Try to open the semaphore; if it does not exist, create it
+    sem = sem_open("/sem1", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR, 1); // Create the semaphore with initial value 1 (semaphore counter)
+
+    if (sem == SEM_FAILED) {
+        perror("sem_open failed");
+        return -1;
+    } else {
+        printf("\nsem_open success\n");
+    }
+
+    // Get the current value of the semaphore
+    sem_getvalue(sem, &sval);
+    printf("\nSemaphore value (sval) = %d\n", sval);
+
+    // Wait on the semaphore (this will decrement the semaphore value)
+    ret = sem_wait(sem);
+    printf("\nsem_wait result (ret) = %d\n", ret);
+
+    printf("\nProcess 3: Semaphore is now locked.\n");
+
+    // Post (increment) the semaphore to release it
+    sem_post(sem);
+
+    // Clean up: Uncomment this line if you want to unlink the semaphore when done
+    // sem_unlink("/sem1");
+
+    return 0;
+}
