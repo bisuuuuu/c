@@ -1,0 +1,344 @@
+BATBALL
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+BAT.H
+#pragma once 
+//Pragmatic information to the compiler not to read/open same header after first time
+#include <SFML/Graphics.hpp>
+using namespace sf;
+
+class Bat
+{
+    Vector2f m_Position;
+    RectangleShape m_Shape;
+    float m_Speed = 1000.0f;
+    bool m_MovingRight = false;
+    bool m_MovingLeft = false;
+public:
+    Bat(float startX, float startY);
+    FloatRect getPosition();
+    RectangleShape getShape();
+    void moveLeft();
+    void moveRight();
+    void stopLeft();
+    void stopRight();
+    void update(Time dt);
+};
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+BAT.CPP
+
+
+#include "Bat.h"
+using namespace sf;
+Bat::Bat(float startX, float startY)
+{
+    m_Position.x = startX;
+    m_Position.y = startY;
+
+    m_Shape.setSize(Vector2f(100.0, 10.0));
+    m_Shape.setPosition(m_Position);
+}
+
+FloatRect Bat::getPosition()
+{
+    return m_Shape.getGlobalBounds();
+}
+
+RectangleShape Bat::getShape()
+{
+    return m_Shape;
+}
+
+void Bat::moveLeft()
+{
+    m_MovingLeft = true;
+}
+
+void Bat::moveRight()
+{
+    m_MovingRight = true;
+}
+
+void Bat::stopLeft()
+{
+    m_MovingLeft = false;
+}
+
+void Bat::stopRight()
+{
+    m_MovingRight = false;
+}
+
+void Bat::update(Time dt)
+{
+    if (m_MovingLeft)
+    {
+        m_Position.x -= m_Speed * dt.asSeconds();
+        //extra code to confirm bat should be not outside the resolution 
+        if(m_Position.x<0){
+            stopLeft();
+        }
+    }
+
+    if (m_MovingRight)
+    {
+        m_Position.x += m_Speed * dt.asSeconds();
+        //extra code to confirm bat should be not outside the resolution
+        if(m_Position.x>1366){
+            stopRight();
+        }
+    }
+    m_Shape.setPosition(m_Position);
+}
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BALL.H
+
+#pragma once
+#include <SFML/Graphics.hpp>
+using namespace sf;
+
+class Ball
+{
+    Vector2f m_Position;
+    CircleShape m_Shape;
+
+    float m_Speed = 1000.0f;
+    float m_DirectionX = .2f;
+    float m_DirectionY = .2f;
+public:
+    Ball(float startX, float startY);
+    FloatRect getPosition();
+    CircleShape getShape();
+    float getXVelocity();
+    void reboundSides();
+    void reboundBatOrTop();
+    void reboundBottom();
+    void update(Time dt);
+};
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+BALL.CPP
+
+#include "Ball.h"
+
+Ball::Ball(float startX, float startY)
+{
+    m_Position.x = startX;
+    m_Position.y = startY;
+
+    m_Shape=sf::CircleShape(5.0f);
+    m_Shape.setPosition(m_Position);
+}
+
+FloatRect Ball::getPosition()
+{
+    return m_Shape.getGlobalBounds();
+}
+
+CircleShape Ball::getShape()
+{
+    return m_Shape;
+}
+
+float Ball::getXVelocity()
+{
+    return m_DirectionX;
+}
+
+void Ball::reboundSides()
+{
+    m_DirectionX = -m_DirectionX;
+}
+
+void Ball::reboundBatOrTop()
+{
+    m_DirectionY = -m_DirectionY;
+}
+
+void Ball::reboundBottom()
+{
+    m_Position.y = 0;
+    m_Position.x = 500;
+    m_DirectionY = -m_DirectionY;
+}
+
+void Ball::update(Time dt)
+{
+    // Update the ball's position
+    m_Position.y += m_DirectionY * m_Speed * dt.asSeconds();
+    m_Position.x += m_DirectionX * m_Speed * dt.asSeconds();
+
+    // Move the ball
+    m_Shape.setPosition(m_Position);
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PONG.CPP
+
+#include "Bat.h"
+#include "Ball.h"
+#include <sstream>
+#include <cstdlib>
+#include <SFML/Graphics.hpp>
+
+int main()
+{
+    // Create a video mode object
+    VideoMode vm(1366, 768);
+
+    // Create and open a window for the game
+    RenderWindow window(vm, "Pong",Style::Fullscreen);
+
+    int score = 0;
+    int lives = 3;
+
+    // Create a bat at the bottom center of the screen
+    Bat bat(1366 / 2, 768 - 20);
+
+    // Create a ball
+    Ball ball(1366 / 2, 0);
+
+    // Create a Text object called HUD
+    Text hud;
+
+    // A cool retro-style font
+    Font font;
+    font.loadFromFile("font/DS-DIGIB.TTF");
+
+    // Set the font to our retro-style
+    hud.setFont(font);
+
+    // Make it nice and big
+    hud.setCharacterSize(75);
+
+    // Choose a color
+    hud.setFillColor(Color::White);
+    hud.setCharacterSize(75);
+    hud.setString("Score:0 Lives:3");
+    hud.setPosition(20, 20);
+
+    // Here is our clock for timing everything
+    Clock clock;
+
+    while (window.isOpen())
+    {
+        /*
+        Handle the player input
+        */
+        Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == Event::Closed)
+                // Quit the game when the window is closed
+                window.close();
+        }
+
+        // Handle the player quitting
+        if (Keyboard::isKeyPressed(Keyboard::Escape))
+        {
+            window.close();
+        }
+
+        // Handle the pressing and releasing of the arrow keys
+        if (Keyboard::isKeyPressed(Keyboard::Left))
+        {
+            if(bat.getPosition().left<0){
+                bat.stopLeft();
+            }
+            else{
+                bat.moveLeft();
+
+            }
+        }
+        else
+        {
+            bat.stopLeft();
+        }
+
+        if (Keyboard::isKeyPressed(Keyboard::Right))
+        {
+            if(bat.getPosition().left+bat.getPosition().width>1370){
+                bat.stopRight();
+            }
+            else 
+            {
+                bat.moveRight();
+            }
+        }else
+        {
+            bat.stopRight();
+        }
+
+        /*
+        Update the bat, the ball and the HUD
+        */
+        Time dt = clock.restart();
+        bat.update(dt);
+        ball.update(dt);
+
+        // Update the HUD text
+        std::stringstream ss;
+        ss << "Score:" << score << "    Lives:" << lives;
+        hud.setString(ss.str());
+
+        // Handle ball hitting the bottom
+        if (ball.getPosition().top > window.getSize().y)
+        {
+            // Reverse the ball direction
+            ball.reboundBottom();
+
+            // Remove a life
+            lives--;
+
+            // Check for zero lives
+            if (lives < 1)
+            {
+                // reset the score
+                score = 0;
+                // reset the lives
+                lives = 3;
+            }
+        }
+
+        // Handle ball hitting top
+        if (ball.getPosition().top < 0)
+        {
+            ball.reboundBatOrTop();
+
+            // Add a point to the players score
+            score++;
+        }
+
+        // Handle ball hitting sides
+        if (ball.getPosition().left < 0 ||
+            ball.getPosition().left + 
+            ball.getPosition().width > window.getSize().x)
+        {
+            ball.reboundSides();
+        }
+
+        // Has the ball hit the bat?
+        if (ball.getPosition().intersects(bat.getPosition()))
+        {
+            // Hit detected so reverse the ball and score a point
+            ball.reboundBatOrTop();
+        }
+
+        /*
+        Draw the bat, the ball and the HUD
+        */
+        window.clear();
+        window.draw(hud);
+        window.draw(ball.getShape());
+        window.draw(bat.getShape());
+        window.display();
+    }
+
+    return 0;
+}
+
+//g++ bat.cpp ball.cpp pong.cpp -lsfml-window -lsfml-graphics -lsfml-system
+//a.out

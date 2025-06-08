@@ -1,0 +1,1286 @@
+zombie
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PLAYER.CPP
+
+#pragma once
+#include <SFML/Graphics.hpp>
+#include<cmath>
+
+using namespace sf;
+
+class Player
+{
+private:
+	const float START_SPEED = 200;
+	const float START_HEALTH = 100;
+
+	// Where is the player
+	Vector2f m_Position;
+
+	// Of course we will need a sprite
+	Sprite m_Sprite;
+
+	// And a texture
+	// !!Watch this space!!
+	Texture m_Texture;
+
+	// What is the screen resolution
+	Vector2f m_Resolution;
+
+	// What size is the current arena
+	IntRect m_Arena;
+
+	// How big is each tile of the arena
+	int m_TileSize;
+
+	// Which directions is the player currently moving in
+	bool m_UpPressed;
+	bool m_DownPressed;
+	bool m_LeftPressed;
+	bool m_RightPressed;
+
+	// How much health has the player got?
+	int m_Health;
+	// What is the maximum health the player can have
+	int m_MaxHealth;
+
+	// When was the player last hit
+	Time m_LastHit;
+
+	// Speed in pixels per second
+	float m_Speed;
+
+
+	// All our public functions will come next
+public:
+
+	Player();
+
+	void spawn(IntRect arena, Vector2f resolution, int tileSize);
+
+	// Handle the player getting hit by a zombie
+	bool hit(Time timeHit);
+
+	// How long ago was the player last hit
+	Time getLastHitTime();
+
+	// Where is the player
+	FloatRect getPosition();
+
+	// Where is the center of the player
+	Vector2f getCenter();
+
+	// Which angle is the player facing
+	float getRotation();
+
+	// Send a copy of the sprite to main
+	Sprite getSprite();
+
+	// How much health has the player currently got?
+	int getHealth();
+
+	// The next four functions move the player
+	void moveLeft();
+
+	void moveRight();
+
+	void moveUp();
+
+	void moveDown();
+
+	// Stop the player moving in a specific direction
+	void stopLeft();
+
+	void stopRight();
+
+	void stopUp();
+
+	void stopDown();
+
+	// We will call this function once every frame
+	void update(float elapsedTime, Vector2i mousePosition);
+
+	// Give player a speed boost
+	void upgradeSpeed();
+
+	// Give the player some health
+	void upgradeHealth();
+
+	// Increase the maximum amount of health the player can have
+	void increaseHealthLevel(int amount);
+
+
+};
+
+Player::Player()
+{
+	m_Speed = START_SPEED;
+	m_Health = START_HEALTH;
+	m_MaxHealth = START_HEALTH;
+
+	// Associate a texture with the sprite
+	// !!Watch this space!!
+	m_Texture.loadFromFile("graphics/player.png");
+	m_Sprite.setTexture(m_Texture);
+
+	// Set the origin of the sprite to the centre, 
+	// for smooth rotation
+	m_Sprite.setOrigin(25, 25);
+}
+
+void Player::spawn(IntRect arena, Vector2f resolution, int tileSize)
+{
+	// Place the player in the middle of the arena
+	m_Position.x = arena.width / 2;
+	m_Position.y = arena.height / 2;
+
+	// Copy the details of the arena to the player's m_Arena
+	m_Arena.left = arena.left;
+	m_Arena.width = arena.width;
+	m_Arena.top = arena.top;
+	m_Arena.height = arena.height;
+
+	// Remember how big the tiles are in this arena
+	m_TileSize = tileSize;
+
+	// Strore the resolution for future use
+	m_Resolution.x = resolution.x;
+	m_Resolution.y = resolution.y;
+
+}
+
+Time Player::getLastHitTime()
+{
+	return m_LastHit;
+}
+
+bool Player::hit(Time timeHit)
+{
+	if (timeHit.asMilliseconds() - m_LastHit.asMilliseconds() > 200)// 2 tenths of second
+	{
+		m_LastHit = timeHit;
+		m_Health -= 10;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+FloatRect Player::getPosition()
+{
+	return m_Sprite.getGlobalBounds();
+}
+
+Vector2f Player::getCenter()
+{
+	return m_Position;
+}
+
+float Player::getRotation()
+{
+	return m_Sprite.getRotation();
+}
+
+Sprite Player::getSprite()
+{
+	return m_Sprite;
+}
+
+int Player::getHealth()
+{
+	return m_Health;
+}
+
+void Player::moveLeft()
+{
+	m_LeftPressed = true;
+}
+
+void Player::moveRight()
+{
+	m_RightPressed = true;
+}
+
+void Player::moveUp()
+{
+	m_UpPressed = true;
+}
+
+void Player::moveDown()
+{
+	m_DownPressed = true;
+}
+
+void Player::stopLeft()
+{
+	m_LeftPressed = false;
+}
+
+void Player::stopRight()
+{
+	m_RightPressed = false;
+}
+
+void Player::stopUp()
+{
+	m_UpPressed = false;
+}
+
+void Player::stopDown()
+{
+	m_DownPressed = false;
+}
+
+void Player::update(float elapsedTime, Vector2i mousePosition)
+{
+
+	if (m_UpPressed)
+	{
+		m_Position.y -= m_Speed * elapsedTime;
+	}
+
+	if (m_DownPressed)
+	{
+		m_Position.y += m_Speed * elapsedTime;
+	}
+
+	if (m_RightPressed)
+	{
+		m_Position.x += m_Speed * elapsedTime;
+	}
+
+	if (m_LeftPressed)
+	{
+		m_Position.x -= m_Speed * elapsedTime;
+	}
+
+	m_Sprite.setPosition(m_Position);
+
+
+
+	// Keep the player in the arena
+	if (m_Position.x > m_Arena.width - m_TileSize)
+	{
+		m_Position.x = m_Arena.width - m_TileSize;
+	}
+
+	if (m_Position.x < m_Arena.left + m_TileSize)
+	{
+		m_Position.x = m_Arena.left + m_TileSize;
+	}
+
+	if (m_Position.y > m_Arena.height - m_TileSize)
+	{
+		m_Position.y = m_Arena.height - m_TileSize;
+	}
+
+	if (m_Position.y < m_Arena.top + m_TileSize)
+	{
+		m_Position.y = m_Arena.top + m_TileSize;
+	}
+
+	// Calculate the angle the player is facing
+	float angle = (atan2(mousePosition.y - m_Resolution.y / 2,
+		mousePosition.x - m_Resolution.x / 2)
+		* 180) / 3.141;
+
+	m_Sprite.setRotation(angle);
+}
+
+void Player::upgradeSpeed()
+{
+	// 20% speed upgrade
+	m_Speed += (START_SPEED * .2);
+}
+
+void Player::upgradeHealth()
+{
+	// 20% max health upgrade
+	m_MaxHealth += (START_HEALTH * .2);
+
+}
+
+void Player::increaseHealthLevel(int amount)
+{
+	m_Health += amount;
+
+	// But not beyond the maximum
+	if (m_Health > m_MaxHealth)
+	{
+		m_Health = m_MaxHealth;
+	}
+}
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+zombie.cpp
+
+#pragma once
+#include <SFML/Graphics.hpp>
+#include <cstdlib>
+#include <ctime>
+#include<cmath>
+
+
+using namespace sf;
+
+class Zombie
+{
+private:
+	// How fast is each zombie type?
+	const float BLOATER_SPEED = 40;
+	const float CHASER_SPEED = 80;
+	const float CRAWLER_SPEED = 20;
+
+	// How tough is each zombie type
+	const float BLOATER_HEALTH = 5;
+	const float CHASER_HEALTH = 1;
+	const float CRAWLER_HEALTH = 3;
+
+	// Make each zombie vary its speed slightly
+	const int MAX_VARRIANCE = 30;
+	const int OFFSET = 101 - MAX_VARRIANCE;
+
+	// Where is this zombie?
+	Vector2f m_Position;
+
+	//Texture for zombie
+	Texture m_Texture;
+
+	// A sprite for the zombie
+	Sprite m_Sprite;
+
+	// How fast can this one run/crawl?
+	float m_Speed;
+
+	// How much health has it got?
+	float m_Health;
+
+	// Is it still alive?
+	bool m_Alive;
+
+	// Public prototypes go here	
+public:
+
+	// Handle when a bullet hits a zombie
+	bool hit();
+
+	// Find out if the zombie is alive
+	bool isAlive();
+
+	// Spawn a new zombie
+	void spawn(float startX, float startY, int type, int seed);
+
+	// Return a rectangle that is the position in the world
+	FloatRect getPosition();
+
+	// Get a copy of the sprite to draw
+	Sprite getSprite();
+
+	// Update the zombie each frame
+	void update(float elapsedTime, Vector2f playerLocation);
+};
+
+
+void Zombie::spawn(float startX, float startY, int type, int seed)
+{
+
+	switch (type)
+	{
+	case 0:
+		// Bloater
+		m_Texture.loadFromFile("graphics/bloater.png");
+		m_Sprite.setTexture(m_Texture);
+
+		m_Speed = 40;
+		m_Health = 5;
+		break;
+
+	case 1:
+		// Chaser
+		m_Texture.loadFromFile("graphics/chaser.png");
+		m_Sprite.setTexture(m_Texture);
+
+		m_Speed = 70;
+		m_Health = 1;
+		break;
+
+	case 2:
+		// Crawler
+		m_Texture.loadFromFile("graphics/crawler.png");
+		m_Sprite.setTexture(m_Texture);
+
+		m_Speed = 20;
+		m_Health = 3;
+		break;
+	}
+
+	// Modify the speed to make the zombie unique
+	// Every zombie is unique. Create a speed modifier
+	srand((int)time(0) * seed);
+	// Somewhere between 80 an 100
+	float modifier = (rand() % MAX_VARRIANCE) + OFFSET;
+	// Express as a fraction of 1
+	modifier /= 100; // Now equals between .7 and 1
+	m_Speed *= modifier;
+
+	m_Position.x = startX;
+	m_Position.y = startY;
+
+	m_Sprite.setOrigin(25, 25);
+	m_Sprite.setPosition(m_Position);
+}
+
+bool Zombie::hit()
+{
+	m_Health--;
+
+	if (m_Health < 0)
+	{
+		// dead
+		m_Alive = false;
+		m_Texture.loadFromFile("graphics/blood.png");
+		m_Sprite.setTexture(m_Texture);
+		
+		return true;
+	}
+
+	// injured but not dead yet
+	return false;
+}
+
+bool Zombie::isAlive()
+{
+	return m_Alive;
+}
+
+FloatRect Zombie::getPosition()
+{
+	return m_Sprite.getGlobalBounds();
+}
+
+
+Sprite Zombie::getSprite()
+{
+	return m_Sprite;
+}
+
+void Zombie::update(float elapsedTime,
+	Vector2f playerLocation)
+{
+	float playerX = playerLocation.x;
+	float playerY = playerLocation.y;
+
+	// Update the zombie position variables
+	if (playerX > m_Position.x)
+	{
+		m_Position.x = m_Position.x +
+			m_Speed * elapsedTime;
+	}
+
+	if (playerY > m_Position.y)
+	{
+		m_Position.y = m_Position.y +
+			m_Speed * elapsedTime;
+	}
+
+	if (playerX < m_Position.x)
+	{
+		m_Position.x = m_Position.x -
+			m_Speed * elapsedTime;
+	}
+
+	if (playerY < m_Position.y)
+	{
+		m_Position.y = m_Position.y -
+			m_Speed * elapsedTime;
+	}
+
+	// Move the sprite
+	m_Sprite.setPosition(m_Position);
+
+	// Face the sprite in the correct direction
+	float angle = (atan2(playerY - m_Position.y,
+		playerX - m_Position.x)
+		* 180) / 3.141;
+
+	m_Sprite.setRotation(angle);
+
+
+}
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+createhorde.cpp
+
+#include "Zombie.cpp"
+
+Zombie* createHorde(int numZombies, IntRect arena)
+{
+	Zombie* zombies = new Zombie[numZombies];
+
+	int maxY = arena.height - 20;
+	int minY = arena.top + 20;
+	int maxX = arena.width - 20;
+	int minX = arena.left + 20;
+
+	for (int i = 0; i < numZombies; i++)
+	{
+
+		// Which side should the zombie spawn
+		srand((int)time(0) * i);
+		int side = (rand() % 4);
+		float x, y;
+
+		switch (side)
+		{
+		case 0:
+			// left
+			x = minX;
+			y = (rand() % maxY) + minY;
+			break;
+
+		case 1:
+			// right
+			x = maxX;
+			y = (rand() % maxY) + minY;
+			break;
+
+		case 2:
+			// top
+			x = (rand() % maxX) + minX;
+			y = minY;
+			break;
+
+		case 3:
+			// bottom
+			x = (rand() % maxX) + minX;
+			y = maxY;
+			break;
+		}
+
+		// Bloater, crawler or runner
+		srand((int)time(0) * i * 2);
+		int type = (rand() % 3);
+
+		// Spawn the new zombie into the array
+		zombies[i].spawn(x, y, type, i);
+
+	}
+	return zombies;
+}
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BULLET.CPP
+
+#pragma once
+#include <SFML/Graphics.hpp>
+
+using namespace sf;
+
+class Bullet
+{
+private:
+	// Where is the bullet?
+	Vector2f m_Position;
+
+	// What each bullet looks like
+	RectangleShape m_BulletShape;
+
+	// Is this bullet currently whizzing through the air
+	bool m_InFlight = false;
+
+	// How fast does a bullet travel?
+	float m_BulletSpeed = 1000;
+
+	// What fraction of 1 pixel does the bullet travel, 
+	// Horizontally and vertically each frame?
+	// These values will be derived from m_BulletSpeed
+	float m_BulletDistanceX;
+	float m_BulletDistanceY;
+
+	// Where is this bullet headed to?
+	float m_XTarget;
+	float m_YTarget;
+
+	// Some boundaries so the bullet doesn't fly forever
+	float m_MaxX;
+	float m_MinX;
+	float m_MaxY;
+	float m_MinY;
+
+// Public function prototypes go here
+public:
+	// The constructor
+	Bullet();
+
+	// Stop the bullet
+	void stop();
+
+	// Returns the value of m_InFlight
+	bool isInFlight();
+
+	// Launch a new bullet
+	void shoot(float startX, float startY,
+		float xTarget, float yTarget);
+
+	// Tell the calling code where the bullet is in the world
+	FloatRect getPosition();
+
+	// Return the actual shape (for drawing)
+	RectangleShape getShape();
+
+	// Update the bullet each frame
+	void update(float elapsedTime);
+
+};
+
+// The constructor
+Bullet::Bullet()
+{
+	m_BulletShape.setSize(sf::Vector2f(5, 5));  //*********modified:(2,2)
+}
+
+void Bullet::shoot(float startX, float startY,
+	float targetX, float targetY)
+{
+	// Keep track of the bullet
+	m_InFlight = true;
+	m_Position.x = startX;
+	m_Position.y = startY;
+
+	// Calculate the gradient of the flight path
+	//float gradient = (startX - targetX) / (startY - targetY);
+	float gradient = (startY - targetY)/(startX - targetX);
+
+	// Any gradient less than zero needs to be negative
+	if (gradient < 0)
+	{
+		gradient *= -1;
+	}
+
+	// Calculate the ratio between x and t
+	/*float ratioXY = m_BulletSpeed / (1 + gradient);
+
+	// Set the "speed" horizontally and vertically
+	m_BulletDistanceY = ratioXY;
+	m_BulletDistanceX = ratioXY * gradient;
+	*/
+
+	//Fraction of 1 px the bullet travels vertically in each frame
+	//m_BulletDistanceY=(1/(1+gradient))*m_BulletSpeed;  //y = s * sin A
+	m_BulletDistanceY=(gradient/(1+gradient))*m_BulletSpeed; //y = s * sin A
+
+	
+	//Fraction of 1 px the bullet travels horizontally in each frame
+	//m_BulletDistanceX=(gradient/(1+gradient))*m_BulletSpeed; //x = s * cos A	
+	m_BulletDistanceX=(1/(1+gradient))*m_BulletSpeed;  //x = s * cos A
+	
+	// Point the bullet in the right direction
+	if (targetX < startX)
+	{
+		m_BulletDistanceX *= -1;
+	}
+
+	if (targetY < startY)
+	{
+		m_BulletDistanceY *= -1;
+	}
+
+	// Finally, assign the results to the
+	// member variables
+	m_XTarget = targetX;
+	m_YTarget = targetY;
+
+	// Set a max range of 1000 pixels
+	float range = 1000;
+	m_MinX = startX - range;
+	m_MaxX = startX + range;
+	m_MinY = startY - range;
+	m_MaxY = startY + range;
+	
+	// Position the bullet ready to be drawn
+	m_BulletShape.setPosition(m_Position);
+}
+
+void Bullet::stop()
+{
+	m_InFlight = false;
+}
+
+bool Bullet::isInFlight()
+{
+	return m_InFlight;
+}
+
+FloatRect Bullet::getPosition()
+{
+	return m_BulletShape.getGlobalBounds();
+}
+
+RectangleShape Bullet::getShape()
+{
+	return m_BulletShape;
+}
+
+
+void Bullet::update(float elapsedTime)
+{
+	// Update the bullet position variables
+	m_Position.x += m_BulletDistanceX * elapsedTime;
+	m_Position.y += m_BulletDistanceY * elapsedTime;
+
+	// Move the bullet
+	m_BulletShape.setPosition(m_Position);
+
+	// Has the bullet gone out of range?
+	if (m_Position.x < m_MinX || m_Position.x > m_MaxX ||
+		m_Position.y < m_MinY || m_Position.y > m_MaxY)
+	{
+		m_InFlight = false;
+	}
+
+}
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ZombieArena.cpp
+
+#include <SFML/Graphics.hpp>
+#include "Player.cpp"
+#include "CreateHorde.cpp"
+#include "Zombie.cpp"
+#include "Bullet.cpp"
+
+using namespace sf;
+
+int createBackground(VertexArray& rVA, IntRect arena);
+
+int main()
+{
+	// The game will always be in one of four states
+	enum class State { PAUSED, LEVELING_UP, GAME_OVER, PLAYING };
+	// Start with the GAME_OVER state
+	State state = State::GAME_OVER;
+
+	
+	// Get the screen resolution and create an SFML window
+	Vector2f resolution;
+	resolution.x = VideoMode::getDesktopMode().width;
+	resolution.y = VideoMode::getDesktopMode().height;
+
+	RenderWindow window(VideoMode(resolution.x, resolution.y),
+		"Zombie Arena", Style::Fullscreen);
+
+	// Create a an SFML View for the main action
+	View mainView(sf::FloatRect(0, 0, resolution.x, resolution.y));
+
+	// Here is our clock for timing everything
+	Clock clock;
+	// How long has the PLAYING state been active
+	Time gameTimeTotal;
+
+	// Where is the mouse in relation to world coordinates
+	Vector2f mouseWorldPosition;
+	// Where is the mouse in relation to screen coordinates
+	Vector2i mouseScreenPosition;
+
+	// Create an instance of the Player class
+	Player player;
+
+	// The boundaries of the arena
+	IntRect arena;
+
+	// Create the background
+	VertexArray background;
+	// Load the texture for our background vertex array
+	Texture textureBackground; 
+	textureBackground.loadFromFile("graphics/background_sheet.png");	
+	
+	//Prepare for a horde of zombies
+	int numZombies;
+	int numZombiesAlive;
+	Zombie* zombies = NULL;
+	
+	//**********Bullets*****/
+	// 100 bullets should do
+	Bullet bullets[100];
+	int currentBullet = 0;
+	int bulletsSpare = 24; //24
+	int bulletsInClip = 6; //6
+	int clipSize = 6;
+	float fireRate = 10; //1
+	// When was the fire button last pressed?
+	Time lastPressed;
+
+	//********Use Crosshair in place of mouse pointer******/
+	// Hide the mouse pointer and replace it with crosshair
+	window.setMouseCursorVisible(true);
+	Sprite spriteCrosshair;
+	Texture textureCrosshair;
+	textureCrosshair.loadFromFile("graphics/crosshair.png");
+	spriteCrosshair.setTexture(textureCrosshair);
+	spriteCrosshair.setOrigin(25, 25);
+
+	//*******About the game
+	int score = 0;
+	int hiScore = 0;
+
+
+	// The main game loop
+	while (window.isOpen())
+	{
+		/*
+		************
+		Handle input
+		************
+		*/
+
+		// Handle events
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::KeyPressed)
+			{
+				// Pause a game while playing
+				if (event.key.code == Keyboard::Return &&
+					state == State::PLAYING)
+				{
+					state = State::PAUSED;
+				}
+
+				// Restart while paused
+				else if (event.key.code == Keyboard::Return &&
+					state == State::PAUSED)
+				{
+					state = State::PLAYING;
+					// Reset the clock so there isn't a frame jump
+					clock.restart();
+				}
+
+				// Start a new game while in GAME_OVER state
+				else if (event.key.code == Keyboard::Return &&
+					state == State::GAME_OVER)
+				{
+					state = State::LEVELING_UP;
+				}
+
+				if (state == State::PLAYING)
+				{
+					// Reloading
+					if (event.key.code == Keyboard::R)
+					{
+						if (bulletsSpare >= clipSize)
+						{
+							// Plenty of bullets. Reload.
+							bulletsInClip = clipSize;
+							bulletsSpare -= clipSize;
+						}
+						else if (bulletsSpare > 0)
+						{
+							// Only few bullets left
+							bulletsInClip = bulletsSpare;
+							bulletsSpare = 0;
+						}
+						else
+						{
+							// More here soon!!!!
+						}
+					}
+				}
+
+			}
+		}// End event polling
+
+
+		 // Handle the player quitting
+		if (Keyboard::isKeyPressed(Keyboard::Escape))
+		{
+			window.close();
+		}
+
+		// Handle controls while playing
+		if (state == State::PLAYING)
+		{
+			// Handle the pressing and releasing of the WASD keys
+			if (Keyboard::isKeyPressed(Keyboard::W))
+			{
+				player.moveUp();
+			}
+			else
+			{
+				player.stopUp();
+			}
+
+			if (Keyboard::isKeyPressed(Keyboard::S))
+			{
+				player.moveDown();
+			}
+			else
+			{
+				player.stopDown();
+			}
+
+			if (Keyboard::isKeyPressed(Keyboard::A))
+			{
+				player.moveLeft();
+			}
+			else
+			{
+				player.stopLeft();
+			}
+
+			if (Keyboard::isKeyPressed(Keyboard::D))
+			{
+				player.moveRight();
+			}
+			else
+			{
+				player.stopRight();
+			}
+
+			//**********Fire a bullet******/
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
+
+				if (gameTimeTotal.asMilliseconds()
+					- lastPressed.asMilliseconds()
+					> 1000 / fireRate && bulletsInClip > 0)
+				{
+
+					// Pass the centre of the player 
+					// and the centre of the cross-hair
+					// to the shoot function
+					bullets[currentBullet].shoot(
+						player.getCenter().x, player.getCenter().y,
+						mouseWorldPosition.x, mouseWorldPosition.y);
+
+					currentBullet++;
+					if (currentBullet > 99)
+					{
+						currentBullet = 0;
+					}
+					lastPressed = gameTimeTotal;
+
+					bulletsInClip--;
+				}
+
+			}// End fire a bullet
+
+		}// End WASD while playing
+
+		 // Handle the levelling up state
+		if (state == State::LEVELING_UP)
+		{
+			// Handle the player levelling up
+			if (event.key.code == Keyboard::Num1)
+			{
+				state = State::PLAYING;
+			}
+
+			if (event.key.code == Keyboard::Num2)
+			{
+				state = State::PLAYING;
+			}
+
+			if (event.key.code == Keyboard::Num3)
+			{
+				state = State::PLAYING;
+			}
+
+			if (event.key.code == Keyboard::Num4)
+			{
+				state = State::PLAYING;
+			}
+
+			if (event.key.code == Keyboard::Num5)
+			{
+				state = State::PLAYING;
+			}
+
+			if (event.key.code == Keyboard::Num6)
+			{
+				state = State::PLAYING;
+			}
+
+			if (state == State::PLAYING)
+			{
+				// Prepare thelevel
+				// We will modify the next two lines later
+				arena.width = 500;
+				arena.height = 500;
+				arena.left = 0;
+				arena.top = 0;
+
+				// Pass the vertex array by reference 
+				// to the createBackground function
+				int tileSize = createBackground(background, arena);
+
+				// Spawn the player in the middle of the arena
+				player.spawn(arena, resolution, tileSize);
+
+				//Create a horde of zombies
+				   numZombies = 4;
+
+				// Delete the previously allocated memory (if it exists)
+				   delete[] zombies;
+				   zombies = createHorde(numZombies, arena);
+				   numZombiesAlive = numZombies;
+
+				// Reset the clock so there isn't a frame jump
+				clock.restart();
+			}
+		}// End levelling up
+
+		 /*
+		 ****************
+		 UPDATE THE FRAME
+		 ****************
+		 */
+		if (state == State::PLAYING)
+		{
+			// Update the delta time
+			Time dt = clock.restart();
+			// Update the total game time
+			gameTimeTotal += dt;
+			// Make a decimal fraction of 1 from the delta time
+			float dtAsSeconds = dt.asSeconds();
+
+			// Where is the mouse pointer
+			mouseScreenPosition = Mouse::getPosition();
+
+			// Convert mouse position to world coordinates of mainView
+			mouseWorldPosition = window.mapPixelToCoords(
+				Mouse::getPosition(), mainView);
+
+			//*******Set the crosshair to the //
+			//*******mouse world location****//
+			spriteCrosshair.setPosition(mouseWorldPosition);
+
+			// Update the player
+			player.update(dtAsSeconds, Mouse::getPosition());
+
+			// Make a note of the players new position
+			Vector2f playerPosition(player.getCenter());
+
+			// Make the view centre around the player				
+			mainView.setCenter(player.getCenter());
+
+			//Loop through each Zombie and update them
+			for (int i = 0; i < numZombies; i++)
+			{
+				if (zombies[i].isAlive())
+				{
+					zombies[i].update(dt.asSeconds(), playerPosition);
+				}
+			}
+			
+			//********Update any bullets that are in-flight****/
+			for (int i = 0; i < 100; i++)
+			{
+				if (bullets[i].isInFlight())
+				{
+					bullets[i].update(dtAsSeconds);
+				}
+			}
+
+			//*******Collision detection*****/
+			//*****Have any zombies been shot?****/
+			for (int i = 0; i < 100; i++)
+			{
+				for (int j = 0; j < numZombies; j++)
+				{
+					if (bullets[i].isInFlight() &&
+						zombies[j].isAlive())
+					{
+						if (bullets[i].getPosition().intersects
+							(zombies[j].getPosition()))
+						{
+							//*****Stop the bullet
+							bullets[i].stop();
+
+							//*******Register the hit and see if it was a kill
+							if (zombies[j].hit()) {
+								//*******Not just a hit but a kill too
+								score += 10;
+								if (score >= hiScore)
+								{
+									hiScore = score;
+								}
+
+								numZombiesAlive--;
+
+								//******When all the zombies are dead (again)
+								if (numZombiesAlive == 0) {
+									state = State::LEVELING_UP;
+								}
+							}
+
+						}
+					}
+
+				}
+			}//******End zombie being shot
+
+			 //******Have any zombies touched the player			
+			for (int i = 0; i < numZombies; i++)
+			{
+				if (player.getPosition().intersects
+					(zombies[i].getPosition()) && zombies[i].isAlive())
+				{
+
+					if (player.hit(gameTimeTotal))
+					{
+						// More here later
+					}
+
+					if (player.getHealth() <= 0)
+					{
+						state = State::GAME_OVER;
+
+					}
+				}
+			}//******End player touched
+
+		}//*******End updating the scene
+
+		 /*
+		 **************
+		 Draw the scene
+		 **************
+		 */
+
+		if (state == State::PLAYING)
+		{
+			window.clear();
+
+			// set the mainView to be displayed in the window
+			// And draw everything related to it
+			window.setView(mainView);
+
+			// Draw the background
+			window.draw(background, &textureBackground);
+
+			//Draw the zombies
+			for (int i = 0; i < numZombies; i++)
+			{
+				window.draw(zombies[i].getSprite());
+			}
+			
+			//****** Draw bullets in flight *****/
+			for (int i = 0; i < 100; i++)
+			{
+				if (bullets[i].isInFlight())
+				{
+					window.draw(bullets[i].getShape());
+				}
+			}
+
+			// Draw the player
+			window.draw(player.getSprite());
+
+			//******* Draw the crosshair
+			window.draw(spriteCrosshair);
+		}
+
+		if (state == State::LEVELING_UP)
+		{
+		}
+
+		if (state == State::PAUSED)
+		{
+		}
+
+		if (state == State::GAME_OVER)
+		{
+
+		}
+
+		window.display();
+
+	}// End game loop
+
+	return 0;
+}
+
+int createBackground(VertexArray& rVA, IntRect arena)
+{
+	// Anything we do to rVA we are actually doing to background (in the main function)
+
+	// How big is each tile/texture
+	const int TILE_SIZE = 50;
+	const int TILE_TYPES = 3;
+	const int VERTS_IN_QUAD = 4;
+
+	int worldWidth = arena.width / TILE_SIZE;
+	int worldHeight = arena.height / TILE_SIZE;
+
+	// What type of primitive are we using?
+	rVA.setPrimitiveType(Quads);
+
+	// Set the size of the vertex array
+	rVA.resize(worldWidth * worldHeight * VERTS_IN_QUAD);
+
+	// Start at the beginning of the vertex array
+	int currentVertex = 0;
+
+	for (int w = 0; w < worldWidth; w++)
+	{
+		for (int h = 0; h < worldHeight; h++)
+		{
+			// Position each vertex in the current quad
+			rVA[currentVertex + 0].position = Vector2f(w * TILE_SIZE, h * TILE_SIZE);
+			rVA[currentVertex + 1].position = Vector2f((w * TILE_SIZE) + TILE_SIZE, h * TILE_SIZE);
+			rVA[currentVertex + 2].position = Vector2f((w * TILE_SIZE) + TILE_SIZE, (h * TILE_SIZE) + TILE_SIZE);
+			rVA[currentVertex + 3].position = Vector2f((w * TILE_SIZE), (h * TILE_SIZE) + TILE_SIZE);
+
+			// Define the position in the Texture to draw for current quad
+			// Either mud, stone, grass or wall
+			if (h == 0 || h == worldHeight - 1 || w == 0 || w == worldWidth - 1)
+			{
+				// Use the wall texture
+				rVA[currentVertex + 0].texCoords = Vector2f(0, 0 + TILE_TYPES * TILE_SIZE);
+				rVA[currentVertex + 1].texCoords = Vector2f(TILE_SIZE, 0 + TILE_TYPES * TILE_SIZE);
+				rVA[currentVertex + 2].texCoords = Vector2f(TILE_SIZE, TILE_SIZE + TILE_TYPES * TILE_SIZE);
+				rVA[currentVertex + 3].texCoords = Vector2f(0, TILE_SIZE + TILE_TYPES * TILE_SIZE);
+			}
+			else
+			{
+				// Use a random floor texture
+				srand((int)time(0) + h * w - h);
+				int mOrG = (rand() % TILE_TYPES);
+				int verticalOffset = mOrG * TILE_SIZE;
+
+				rVA[currentVertex + 0].texCoords = Vector2f(0, 0 + verticalOffset);
+				rVA[currentVertex + 1].texCoords = Vector2f(TILE_SIZE, 0 + verticalOffset);
+				rVA[currentVertex + 2].texCoords = Vector2f(TILE_SIZE, TILE_SIZE + verticalOffset);
+				rVA[currentVertex + 3].texCoords = Vector2f(0, TILE_SIZE + verticalOffset);
+
+			}
+
+			// Position ready for the next for vertices
+			currentVertex = currentVertex + VERTS_IN_QUAD;
+		}
+	}
+
+	return TILE_SIZE;
+}
+
