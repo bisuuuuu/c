@@ -1,0 +1,111 @@
+SELECTION sort
+
+def selection_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        min_index = i
+        for j in range(i+1, n):
+            if arr[j] < arr[min_index]:
+                min_index = j
+        arr[i], arr[min_index] = arr[min_index], arr[i]
+
+
+arr = [64, 25, 12, 22, 11]
+selection_sort(arr)
+print(arr)   #o(n^2)
+
+
+
+
+INSERTION sort
+
+def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and arr[j] > key:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+
+arr = [64, 25, 12, 22, 11]
+insertion_sort(arr)
+print(arr)  #o(n^2)
+
+
+
+
+
+
+MERGE sort
+
+def merge_sort(arr):
+    if len(arr) > 1:
+        mid = len(arr) // 2
+        left_half = arr[:mid]
+        right_half = arr[mid:]
+
+        merge_sort(left_half)
+        merge_sort(right_half)
+
+        i = j = k = 0
+        while i < len(left_half) and j < len(right_half):
+            if left_half[i] < right_half[j]:
+                arr[k] = left_half[i]
+                i += 1
+            else:
+                arr[k] = right_half[j]
+                j += 1
+            k += 1
+
+        while i < len(left_half):
+            arr[k] = left_half[i]
+            i += 1
+            k += 1
+
+        while j < len(right_half):
+            arr[k] = right_half[j]
+            j += 1
+            k += 1
+
+
+arr = [64, 25, 12, 22, 11]
+merge_sort(arr)
+print(arr)   #o(n log n)
+
+
+
+
+QUICK sort
+
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr  # Already sorted
+    pivot = arr[len(arr) // 2]  # Middle element as pivot
+    left = [x for x in arr if x < pivot]      # smaller
+    middle = [x for x in arr if x == pivot]   # equal
+    right = [x for x in arr if x > pivot]     # greater
+    return quicksort(left) + middle + quicksort(right)
+
+arr = [4, 2, 7, 3, 1]
+sorted_arr = quicksort(arr)
+print(sorted_arr) #o(n^2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

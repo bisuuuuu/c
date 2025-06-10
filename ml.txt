@@ -1,0 +1,45 @@
+from sklearn.datasets import load_digits
+
+from sklearn.datasets import load_iris
+print(iris.DESCR)  
+iris.data.shape
+iris.target.shape
+
+
+-Iris-Setosa
+-Iris-Versicolour
+-Iris-Virgini
+
+
+
+
+
+
+
+from sklearn.model_selectionimpor train_test_split
+from sklearn.neighbours import KNeighborsClassifier
+ from sklearn.metrics import confusion_matrix
+
+from sklearn.model_selection import KFold
+ kfold = KFold(n_splits=10, random_state=11, shuffle=True)
+
+
+
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(estimator=knn, X=digits.data, 
+y=digits.target, cv=kfold)
+
+
+
+
+from sklearn.svm import SVC
+
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split( nyc.Date.values.reshape(-1, 1), nyc.Temperature.values,random_state=11)
+
+
+
+from sklearn.datasets import fetch_california_housing
+california = fetch_california_housing()
+california.feature_names

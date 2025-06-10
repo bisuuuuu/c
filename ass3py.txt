@@ -1,0 +1,281 @@
+ 5. Write a Python script to perform the following tasks on the given text:
+ • Tokenize the text into words and sentences.
+ • Perform stemming and lemmatization using NLTK or SpaCy.
+ • Remove stop words from the text.
+
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+text = "Natural Language Processing enables machines to understand and process human languages. It is a fascinating field with numerous applications, such as chatbots and language translation."
+words = word_tokenize(text)
+sentences = sent_tokenize(text)
+ps = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
+stemmed_words = [ps.stem(word) for word in words]
+lemmatized_words = [lemmatizer.lemmatize(word) for word in words]
+stop_words = set(stopwords.words('english'))
+filtered_words = [word for word in words if word.lower() not in stop_words]
+print("Sentences:\n", sentences)
+print("Words:\n", words)
+print("Stemmed Words:\n", stemmed_words)
+print("Lemmatized Words:\n", lemmatized_words)
+print("Filtered Words (No Stopwords):\n", filtered_words)
+ 
+ 6.Use the requests library to download the www.python.org home page’s content.
+ Use the Beautiful Soup library to extract only the text from the page.Eliminate the stop words in the resulting text, then use the wordcloud module to create a word
+ cloud based on the text.
+import requests
+from bs4 import BeautifulSoup
+from wordcloud import WordCloud
+from nltk.corpus import stopwords
+import matplotlib.pyplot as plt
+url = "https://www.python.org"
+response = requests.get(url)
+soup = BeautifulSoup(response.content, "html.parser")
+text = soup.get_text(separator=" ")
+text = ' '.join(text.split())
+stop_words = set(stopwords.words('english'))
+filtered_text = ' '.join(word for word in text.split() if word.lower() not in stop_words)
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(filtered_text)
+plt.figure(figsize=(10,5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis("off")
+plt.show()
+
+ 7. (Tokenizing Text and Noun Phrases) Using the text from above problem, create a TextBlob, then
+ tokenize it into Sentences and Words, and extract its noun phrases.
+
+
+
+
+ 8. (Sentiment of a News Article) Using the techniques in problem no. 5, download a web page for a
+ current news article and create a TextBlob. Display the sentiment for the entire TextBlob and for each
+ Sentence.
+from wordcloud import WordCloud
+from textblob import TextBlob
+from bs4 import BeautifulSoup
+import requests
+from nltk.corpus import stopwords
+url = 'https://www.python.org'
+response = requests.get(url)
+page_content = response.text
+soup = BeautifulSoup(page_content, 'html.parser')
+text = soup.get_text(separator=' ')
+stop_words = set(stopwords.words('english'))
+filtered_text = ' '.join(word for word in text.split() if word.lower() not in stop_words)
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(filtered_text)
+blob = TextBlob(filtered_text)
+print("\nOverall Sentiment:")
+print(blob.sentiment)
+print("\nSentiment for Each Sentence:")
+for sentence in blob.sentences:
+    print(f"{sentence} -> Sentiment: {sentence.sentiment}")
+
+
+
+ 9. (Sentiment of a News Article with the NaiveBayesAnalyzer) Repeat the previous exercise but use
+ the NaiveBayesAnalyzer for sentiment analysis.
+from textblob import TextBlob
+from textblob.sentiments import NaiveBayesAnalyzer
+from bs4 import BeautifulSoup
+import requests
+from nltk.corpus import stopwords
+url = 'https://www.bbc.com/news/world-asia-60565556'
+response = requests.get(url)
+page_content = response.text
+soup = BeautifulSoup(page_content, 'html.parser')
+text = soup.get_text(separator=' ')
+stop_words = set(stopwords.words('english'))
+filtered_text = ' '.join(word for word in text.split() if word.lower() not in stop_words)
+blob = TextBlob(filtered_text, analyzer=NaiveBayesAnalyzer())
+print("\nOverall Sentiment:")
+print(blob.sentiment)
+print("\nSentiment for Each Sentence:")
+for sentence in blob.sentences:
+    print(f"{sentence}\nSentiment: {sentence.sentiment}")
+
+
+
+ 10. (Spell CheckaProjectGutenbergBook)DownloadaProjectGutenbergbookandcreateaTextBlob.
+ Tokenize the TextBlob into Words and determine whether any are misspelled. If so, display the possible corrections.
+from textblob import TextBlob
+import requests
+url = "https://www.gutenberg.org/files/1342/1342-0.txt"
+response = requests.get(url)
+book_content = response.text
+blob = TextBlob(book_content)
+words = blob.words
+print("\nMisspelled Words and Corrections:")
+for word in words:
+    if not word.correct() == word:
+        print(f"{word} -> {word.correct()}")
+
+
+ 11. Write a Python program that takes user input in English and translates it to French, Spanish, and
+ German using TextBlob.
+ • Create a program that takes multiple user-inputted sentences, analyzes polarity and subjectivity,
+ and categorizes them as objective/subjective and positive/negative/neutral.
+ 1
+Centre for Data Science
+ Institute of Technical Education & Research, SOA, Deemed to be University
+ • Develop a function that takes a paragraph, splits it into sentences, and calculates the sentiment
+ score for each sentence individually.
+ • Write a program that takes a sentence as input and prints each word along with its POS tag using
+ TextBlob.
+from textblob import TextBlob
+from collections import Counter
+from deep_translator import GoogleTranslator
+def translate_text(text):
+    print("French:", GoogleTranslator(source='auto', target='fr').translate(text))
+    print("Spanish:", GoogleTranslator(source='auto', target='es').translate(text))
+    print("German:", GoogleTranslator(source='auto', target='de').translate(text))
+def analyze_sentiment(text):
+    blob = TextBlob(text)
+    for sentence in blob.sentences:
+        print(f"{sentence} -> Polarity: {sentence.sentiment.polarity}, Subjectivity: {sentence.sentiment.subjectivity}")
+def sentence_sentiment(paragraph):
+    blob = TextBlob(paragraph)
+    for sentence in blob.sentences:
+        print(f"{sentence} -> Sentiment Score: {sentence.sentiment}")
+def pos_tagging(sentence):
+    blob = TextBlob(sentence)
+    for word, tag in blob.tags:
+        print(f"{word} -> {tag}")
+def spell_check(word):
+    blob = TextBlob(word)
+    suggestions = blob.correct()
+    print("Suggested Correction:", suggestions)
+def extract_adjectives(paragraph):
+    blob = TextBlob(paragraph)
+    adjectives = [word for word, tag in blob.tags if tag == "JJ"]
+    print("Adjectives:", adjectives)
+def extract_keywords(text):
+    blob = TextBlob(text)
+    noun_phrases = blob.noun_phrases
+    common_phrases = Counter(noun_phrases).most_common(5)
+    print("Top 5 Keywords:", common_phrases)
+def summarize_text(paragraph):
+    blob = TextBlob(paragraph)
+    scores = {sentence: sum(blob.noun_phrases.count(phrase) for phrase in sentence.split()) for sentence in blob.sentences}
+    summary = sorted(scores, key=scores.get, reverse=True)[:3]
+    print("Summary:", ' '.join(str(s) for s in summary))
+text = input("Enter a paragraph: ")
+translate_text(text)
+analyze_sentiment(text)
+sentence_sentiment(text)
+pos_tagging(text)
+word = input("Enter a word to check spelling: ")
+spell_check(word)
+extract_adjectives(text)
+extract_keywords(text)
+summarize_text(text)
+
+
+ 
+
+
+ 13.
+ • Write a Python program that reads a .txt file, processes the text, and generates a word cloud
+ visualization.
+ • Create a word cloud in the shape of an object (e.g., a heart, star) using WordCloud and a mask
+ image.
+from wordcloud import WordCloud
+import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+def generate_wordcloud(file_path):
+    with open(file_path, 'r') as file:
+        text = file.read()
+    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+def generate_shaped_wordcloud(file_path, mask_path):
+    mask = np.array(Image.open(mask_path))
+    with open(file_path, 'r') as file:
+        text = file.read()
+    wordcloud = WordCloud(mask=mask, background_color='white', contour_width=1, contour_color='black').generate(text)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+generate_wordcloud('file.txt')
+generate_shaped_wordcloud('file.txt', 'image.png')
+
+
+ 14. (Textatistic: Readability of News Articles) Using the above techniques, download from several
+ news sites current news articles on the same topic. Perform readability assessments on them to deter
+mine which sites are the most readable. For each article, calculate the average number of words per
+ sentence, the average number of characters per word and the average number of syllables per word.
+import requests
+from bs4 import BeautifulSoup
+import textstat
+urls = [
+    "https://www.bbc.com/news/world",
+    "https://edition.cnn.com/world",
+    "https://www.aljazeera.com/news/"
+]
+def analyze_readability(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    text = ' '.join([p.get_text() for p in soup.find_all('p')])
+    readability = {
+        'avg_words_per_sentence': textstat.avg_sentence_length(text),
+        'avg_chars_per_word': textstat.avg_character_per_word(text),
+        'avg_syllables_per_word': textstat.avg_syllables_per_word(text)
+    }
+    print("URL:", url)
+    print("Average Words per Sentence:", readability['avg_words_per_sentence'])
+    print("Average Characters per Word:", readability['avg_chars_per_word'])
+    print("Average Syllables per Word:", readability['avg_syllables_per_word'])
+for url in urls:
+    analyze_readability(url)
+
+
+
+ 15. (spaCy: Named Entity Recognition) Using the above techniques, download a current news arti
+cle, then use the spaCy library’s named entity recognition capabilities to display the named entities
+ (people, places, organizations, etc.) in the article.
+
+import requests
+from bs4 import BeautifulSoup
+import spacy
+nlp = spacy.load('en_core_web_sm')
+def analyze_entities(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    text = ' '.join([p.get_text() for p in soup.find_all('p')])
+    doc = nlp(text)
+    for ent in doc.ents:
+        print(f"{ent.text} -> {ent.label_}")
+url = input("Enter the news article URL: ")
+analyze_entities(url)
+
+ 16. (spaCy: Shakespeare Similarity Detection) Using the spaCy techniques, download a Shakespeare
+ comedy from Project Gutenberg and compare it for similarity with Romeo and Juliet
+import spacy
+from urllib.request import urlopen
+nlp = spacy.load('en_core_web_md')
+def fetch_text(url):
+    response = urlopen(url)
+    return response.read().decode('utf-8')
+romeo_juliet_url = "https://www.gutenberg.org/cache/epub/1513/pg1513.txt"
+comedy_url = "https://www.gutenberg.org/cache/epub/1524/pg1524.txt"
+romeo_juliet_text = nlp(fetch_text(romeo_juliet_url))
+comedy_text = nlp(fetch_text(comedy_url))
+similarity_score = romeo_juliet_text.similarity(comedy_text)
+print(f"Similarity between Romeo and Juliet and the comedy: {similarity_score:.2f}")
+
+.
+ 17. (textblob.utils Utility Functions) Use strip punc and lowerstrip functions of TextBlob’s textblob.utils
+ module with all=True keyword argument to remove punctuation and to get a string in all lowercase
+ letters with whitespace and punctuation removed. Experiment with each function on Romeo and
+ Juliet
+from textblob.utils import strip_punc, lowerstrip
+from urllib.request import urlopen
+url = "https://www.gutenberg.org/cache/epub/1513/pg1513.txt"
+response = urlopen(url)
+text = response.read().decode('utf-8')
+cleaned_text_strip = strip_punc(text, all=True)
+cleaned_text_lowerstrip = lowerstrip(text, all=True)
+print("After strip_punc:\n", cleaned_text_strip[:500])
+print("\nAfter lowerstrip:\n", cleaned_text_lowerstrip[:500])

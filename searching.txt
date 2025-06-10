@@ -1,0 +1,73 @@
+def iterative_fibonacci(n):
+    result = 0
+    temp = 1
+    for j in range(0, n):
+        temp, result = result, result + temp
+    return result     
+ fibo-fibo(n-1)+fibo(n-2)
+factorial- n*fac(n-1)
+
+Linear search
+
+def linear_search(arr, target):
+    for i in range(len(arr)):
+        if arr[i] == target:
+            return i  
+    return -1  
+arr = [5, 2, 9, 1, 5, 6]
+print(linear_search(arr, 9))  
+
+
+Binary search
+
+def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid  
+        elif arr[mid] < target:
+            left = mid + 1  
+        else:
+            right = mid - 1  
+    return -1  
+
+arr = [1, 2, 5, 6, 9]
+print(binary_search(arr, 9))  
+
+
+
+
+def recursive_binary_search(arr, target, left, right):
+    if left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            return recursive_binary_search(arr, target, mid + 1, right)
+        else:
+            return recursive_binary_search(arr, target, left, mid - 1)
+    return -1
+
+arr = [1, 2, 5, 6, 9]
+print(recursive_binary_search(arr, 9, 0, len(arr)-1))   
+
+
+
+''' class bank_account:
+    def __init__(self,name):
+        self.balance=0
+        self.name=name
+    def display(self):
+        print(f"{self.balance}")
+        print(f"{self.name}")
+    def deposit(self,amount):
+        self.balance+=amount
+        print(self.balance)
+    def withdraw(self,amount):
+        self.balance-=amount
+        print(self.balance)
+s1=bank_account("bisu")
+s1.display()
+s1.deposit(50)
+s1.withdraw(50)  '''
